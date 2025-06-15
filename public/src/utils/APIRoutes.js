@@ -1,5 +1,4 @@
 // ChatFlow API Routes Configuration
-const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
 // API Base URL - automatically detects environment

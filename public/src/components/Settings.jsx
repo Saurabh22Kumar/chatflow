@@ -148,7 +148,7 @@ const SettingsButton = styled.button`
 
 const Settings = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { theme, currentTheme, isDarkMode, changeTheme, toggleDarkMode } = useTheme();
+  const { currentTheme, isDarkMode, changeTheme, toggleDarkMode } = useTheme();
 
   return (
     <>
