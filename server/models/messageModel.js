@@ -4,6 +4,15 @@ const MessageSchema = mongoose.Schema(
   {
     message: {
       text: { type: String, required: true },
+      type: { 
+        type: String, 
+        enum: ["text", "image", "file", "audio", "video", "emoji"], 
+        default: "text" 
+      },
+      // For file/media messages
+      fileUrl: { type: String },
+      fileName: { type: String },
+      fileSize: { type: Number },
     },
     users: Array,
     sender: {
@@ -11,10 +20,63 @@ const MessageSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
+    // Enhanced ChatFlow features
+    status: {
+      type: String,
+      enum: ["sent", "delivered", "read"],
+      default: "sent",
+    },
+    reactions: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      emoji: String,
+      timestamp: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Messages",
+    },
+    edited: {
+      isEdited: {
+        type: Boolean,
+        default: false,
+      },
+      editedAt: Date,
+      originalText: String,
+    },
+    metadata: {
+      sentiment: {
+        type: String,
+        enum: ["positive", "negative", "neutral"],
+      },
+      language: String,
+      priority: {
+        type: String,
+        enum: ["low", "normal", "high"],
+        default: "normal",
+      },
+    },
+    // Self-destructing messages
+    expiresAt: Date,
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: Date,
   },
   {
     timestamps: true,
   }
 );
+
+// Index for better performance
+MessageSchema.index({ users: 1, createdAt: -1 });
+MessageSchema.index({ sender: 1 });
+MessageSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model("Messages", MessageSchema);

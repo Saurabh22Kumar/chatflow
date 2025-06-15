@@ -1,7 +1,9 @@
 {
-  "name": "chatify",
-  "version": "0.1.0",
+  "name": "chatflow-client",
+  "version": "2.0.0",
+  "description": "Modern frontend client for ChatFlow communication platform",
   "private": true,
+  "homepage": "https://github.com/saurabhkumar/chatflow",
   "dependencies": {
     "@multiavatar/multiavatar": "^1.0.7",
     "@testing-library/jest-dom": "^5.16.2",
