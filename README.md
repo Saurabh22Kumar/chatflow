@@ -1,5 +1,10 @@
 # ChatFlow - Modern Real-Time Communication Platform
 
+[![CI](https://github.com/saurabhkumar/chatflow/actions/workflows/simple-ci.yml/badge.svg)](https://github.com/saurabhkumar/chatflow/actions/workflows/simple-ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![React Version](https://img.shields.io/badge/react-17.0.2-blue)](https://reactjs.org/)
+
 A cutting-edge, full-stack messaging platform built with the MERN stack, featuring advanced real-time communication, smart user interactions, and innovative chat experiences.
 
 ![Login Interface](./images/snappy_login.png)
