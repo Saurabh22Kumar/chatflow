@@ -1,32 +1,23 @@
-# ChatFlow - Railway Production Dockerfile
-# This builds both frontend and backend in a single container
-
-FROM node:20-alpine
+# ChatFlow - Railway Deployment (Backend Only)
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY public/package*.json ./public/
-COPY server/package*.json ./server/
+# Copy server package files
+COPY server/package*.json ./
 
-# Install dependencies for both frontend and backend
-RUN cd public && npm ci --only=production
-RUN cd server && npm ci --only=production
+# Install only production dependencies
+RUN npm ci --only=production
 
-# Copy source code
-COPY public/ ./public/
-COPY server/ ./server/
+# Copy server source code
+COPY server/ ./
 
-# Build frontend
-WORKDIR /app/public
-RUN npm run build
-
-# Switch to server directory
-WORKDIR /app/server
+# Copy pre-built frontend to be served by server
+COPY public/build/ ./public/build/
 
 # Expose port
-EXPOSE 8080
+EXPOSE $PORT
 
-# Start the server (which serves both API and static files)
+# Start the server
 CMD ["npm", "start"]
