@@ -35,6 +35,7 @@ A cutting-edge, full-stack messaging platform built with the MERN stack, featuri
 - **Sound Notifications** - Custom notification sounds
 
 ### 🔒 Privacy & Security
+- **Email Verification** - Secure OTP-based account verification
 - **Message Encryption** - Your conversations stay private
 - **Self-Destructing Messages** - Auto-delete sensitive messages
 - **Privacy Controls** - Granular privacy settings
@@ -88,6 +89,8 @@ chmod +x deploy.sh
 cd server
 cp .env.example .env
 # Edit .env with your MongoDB Atlas connection string
+# IMPORTANT: Configure email settings for user registration
+# See EMAIL_SETUP.md for detailed instructions
 
 # Frontend  
 cd ../public

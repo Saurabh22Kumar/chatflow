@@ -102,6 +102,67 @@ const userSchema = new mongoose.Schema({
       default: false,
     },
   },
+  
+  // Password Reset
+  passwordResetToken: {
+    type: String,
+    default: null,
+  },
+  passwordResetExpiry: {
+    type: Date,
+    default: null,
+  },
+  
+  // Friend Request System
+  friends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users'
+  }],
+  
+  friendRequestsSent: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Users'
+    },
+    sentAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  friendRequestsReceived: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Users'
+    },
+    sentAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  blockedUsers: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Users'
+    },
+    blockedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  // Hidden contacts (friends but not shown in contacts list)
+  hiddenContacts: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Users'
+    },
+    hiddenAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
 }, {
   timestamps: true, // Adds createdAt and updatedAt
 });

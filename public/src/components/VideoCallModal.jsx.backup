@@ -1,0 +1,903 @@
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import styled from 'styled-components';
+import Peer from 'simple-peer';
+import { FiPhone, FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiMaximize2, FiMinimize2, FiVolume2, FiVolumeX } from 'react-icons/fi';
+
+const VideoCallModal = ({ 
+  isOpen, 
+  onClose, 
+  socket, 
+  currentUser, 
+  contact, 
+  isIncoming = false, 
+  incomingSignal = null,
+  callType = 'video' // 'video' or 'audio'
+}) => {
+  const [stream, setStream] = useState(null);
+  const [receivingCall, setReceivingCall] = useState(false);
+  const [caller, setCaller] = useState("");
+  const [callerSignal, setCallerSignal] = useState();
+  const [callAccepted, setCallAccepted] = useState(false);
+  const [callEnded, setCallEnded] = useState(false);
+  const [name, setName] = useState("");
+  const [isMuted, setIsMuted] = useState(false);
+  const [isVideoOff, setIsVideoOff] = useState(callType === 'audio');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true);
+  const [callTimer, setCallTimer] = useState(0);
+  const [callStarted, setCallStarted] = useState(false);
+
+  const myVideo = useRef();
+  const userVideo = useRef();
+  const myAudio = useRef();
+  const userAudio = useRef();
+  const connectionRef = useRef();
+  const callTimerRef = useRef();
+  const mountedRef = useRef(true);
+  const socketCleanupRef = useRef(null);
+  const streamRef = useRef(null);
+
+  // Component cleanup
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  // Get user media on component mount
+  useEffect(() => {
+    if (!isOpen || !mountedRef.current) return;
+    
+    const constraints = {
+      video: callType === 'video',
+      audio: true
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then((currentStream) => {
+        if (!mountedRef.current) return;
+        
+        console.log("Got local stream:", currentStream);
+        setStream(currentStream);
+        streamRef.current = currentStream;
+        
+        const videoElement = callType === 'audio' ? myAudio.current : myVideo.current;
+        if (videoElement) {
+          videoElement.srcObject = currentStream;
+          videoElement.play().catch(error => {
+            console.error("Error playing local stream:", error);
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error accessing media devices:", error);
+      });
+
+    return () => {
+      // Cleanup on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (connectionRef.current) {
+        connectionRef.current.destroy();
+      }
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+      }
+    };
+  }, [isOpen, callType]);
+
+  // Handle incoming call setup
+  useEffect(() => {
+    if (isIncoming && incomingSignal && streamRef.current) {
+      setReceivingCall(true);
+      setCaller(contact._id);
+      setName(contact.username);
+      setCallerSignal(incomingSignal);
+    }
+  }, [isIncoming, incomingSignal, contact, stream]);
+
+  // Socket event listeners (only for call end events - callAccepted is handled in callUser)
+  useEffect(() => {
+    if (!socket || !socket.current) return;
+
+    const socketInstance = socket.current;
+
+    const handleCallEnded = () => {
+      console.log("Received callEnded event from backend");
+      setCallEnded(true);
+      if (connectionRef.current) {
+        connectionRef.current.destroy();
+      }
+      onClose();
+    };
+
+    const handleCallRejected = () => {
+      console.log("Call was rejected");
+      setCallEnded(true);
+      if (connectionRef.current) {
+        connectionRef.current.destroy();
+      }
+      onClose();
+    };
+
+    socketInstance.on("callEnded", handleCallEnded);
+    socketInstance.on("callRejected", handleCallRejected);
+
+    return () => {
+      socketInstance.off("callEnded", handleCallEnded);
+      socketInstance.off("callRejected", handleCallRejected);
+    };
+  }, [socket, onClose]);
+
+  const callUser = useCallback((id) => {
+    const currentStream = streamRef.current;
+    console.log("callUser function called with id:", id, "stream:", !!currentStream, "socket:", !!socket?.current);
+    if (!currentStream || !socket?.current) {
+      console.log("Cannot call user - missing requirements");
+      return;
+    }
+
+    // Clean up any existing connection first
+    if (connectionRef.current) {
+      console.log("Cleaning up existing connection before creating new one");
+      try {
+        connectionRef.current.destroy();
+      } catch (error) {
+        console.error("Error destroying existing connection:", error);
+      }
+      connectionRef.current = null;
+    }
+
+    console.log("Creating peer and emitting callUser event");
+    console.log("Stream being passed to peer:", currentStream);
+    console.log("Stream tracks being passed:", currentStream ? currentStream.getTracks() : 'No stream');
+    
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream: currentStream,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' }
+        ]
+      }
+    });
+
+    peer.on("signal", (data) => {
+      console.log("Peer signal generated, emitting callUser to backend");
+      socket.current.emit("callUser", {
+        userToCall: id,
+    }); signalData: data,
+        from: currentUser._id,
+    peer.on("signal", (data) => {e,
+      console.log("Peer signal generated, emitting callUser to backend");
+      socket.current.emit("callUser", {
+        userToCall: id,
+        signalData: data,
+        from: currentUser._id,Stream) => {
+        name: currentUser.username,stream:", currentStream);
+        callType: callTypetracks:", currentStream.getTracks());
+      });sole.log("Audio tracks:", currentStream.getAudioTracks());
+    });onsole.log("Video tracks:", currentStream.getVideoTracks());
+      
+    peer.on("stream", (currentStream) => {udio' ? userAudio.current : userVideo.current;
+      console.log("Received remote stream:", currentStream);
+      console.log("Stream tracks:", currentStream.getTracks());
+      console.log("Audio tracks:", currentStream.getAudioTracks());'audio' : 'video'} element`);
+      console.log("Video tracks:", currentStream.getVideoTracks());
+        // Ensure audio playback
+      const videoElement = callType === 'audio' ? userAudio.current : userVideo.current;
+      if (videoElement) {Error playing remote stream:", error);
+        videoElement.srcObject = currentStream;
+        console.log(`Set remote stream to ${callType === 'audio' ? 'audio' : 'video'} element`);
+        
+        // Ensure audio playback
+        videoElement.play().catch(error => {
+          console.error("Error playing remote stream:", error);
+        });
+      }
+    });r.on("close", () => {
+      console.log("Peer connection closed - but call will continue until manually ended");
+    peer.on("connect", () => {
+      console.log("Peer connection established successfully");
+    });r.on("error", (error) => {
+      console.error("Peer connection error:", error);
+    peer.on("close", () => {r occurred but call continues - manual disconnect required");
+      console.log("Peer connection closed - but call will continue until manually ended");
+    });
+    const handleCallAccepted = (signal) => {
+    peer.on("error", (error) => { signaling peer. Peer state:", peer.connectionState);
+      console.error("Peer connection error:", error);
+      console.log("Peer error occurred but call continues - manual disconnect required");
+    });   console.log("Setting call as accepted and signaling peer");
+          setCallAccepted(true);
+    const handleCallAccepted = (signal) => {
+      console.log("Call accepted, signaling peer. Peer state:", peer.connectionState);
+      try {onsole.log("Peer is already connected or destroyed, ignoring signal");
+        if (peer && !peer.destroyed && peer.connectionState !== 'connected') {
+          console.log("Setting call as accepted and signaling peer");
+          setCallAccepted(true);dling call accepted:", error);
+          peer.signal(signal); automatically disconnect
+        } else {log("Call accepted error occurred but continuing call - manual disconnect required");
+          console.log("Peer is already connected or destroyed, ignoring signal");
+        }
+      } catch (error) {
+        console.error("Error handling call accepted:", error);
+        // Log error but don't automatically disconnect
+        console.log("Call accepted error occurred but continuing call - manual disconnect required");
+      }
+    }; Cleanup function
+    return () => {
+    socket.current.on("callAccepted", handleCallAccepted);
+        socket.current.off("callAccepted", handleCallAccepted);
+    connectionRef.current = peer;
+    };
+    // Cleanup functioner, callType]);
+    return () => {
+      if (socket.current) {lback(() => {
+        socket.current.off("callAccepted", handleCallAccepted);
+      }sole.log("Answering call with stream:", !!currentStream, "socket:", !!socket?.current);
+    };nsole.log("Stream being passed to answer peer:", currentStream);
+  }, [socket, currentUser, callType]);assed to answer:", currentStream ? currentStream.getTracks() : 'No stream');
+    
+  const answerCall = useCallback(() => {nt) {
+    const currentStream = streamRef.current;ing requirements");
+    console.log("Answering call with stream:", !!currentStream, "socket:", !!socket?.current);
+    console.log("Stream being passed to answer peer:", currentStream);
+    console.log("Stream tracks being passed to answer:", currentStream ? currentStream.getTracks() : 'No stream');
+    // Clean up any existing connection first
+    if (!currentStream || !socket?.current) {
+      console.log("Cannot answer call - missing requirements");ring");
+      return;
+    }   connectionRef.current.destroy();
+      } catch (error) {
+    // Clean up any existing connection firsting connection:", error);
+    if (connectionRef.current) {
+      console.log("Cleaning up existing connection before answering");
+      try {
+        connectionRef.current.destroy();
+      } catch (error) {e);
+        console.error("Error destroying existing connection:", error);
+      }nitiator: false,
+      connectionRef.current = null;
+    } stream: currentStream,
+      config: {
+    setCallAccepted(true);
+    const peer = new Peer({n.l.google.com:19302' },
+      initiator: false,:stun1.l.google.com:19302' },
+      trickle: false,un:stun2.l.google.com:19302' },
+      stream: currentStream,3.l.google.com:19302' },
+      config: {s: 'stun:stun4.l.google.com:19302' }
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' }ack");
+        ]ket.current.emit("answerCall", { signal: data, to: caller });
+      }
+    });
+    peer.on("stream", (currentStream) => {
+    peer.on("signal", (data) => {e stream in answer:", currentStream);
+      console.log("Answering call, sending signal back");ks());
+      socket.current.emit("answerCall", { signal: data, to: caller });
+    });onsole.log("Video tracks:", currentStream.getVideoTracks());
+      
+    peer.on("stream", (currentStream) => {udio' ? userAudio.current : userVideo.current;
+      console.log("Received remote stream in answer:", currentStream);
+      console.log("Stream tracks:", currentStream.getTracks());
+      console.log("Audio tracks:", currentStream.getAudioTracks());'audio' : 'video'} element in answer`);
+      console.log("Video tracks:", currentStream.getVideoTracks());
+        // Ensure audio playback
+      const videoElement = callType === 'audio' ? userAudio.current : userVideo.current;
+      if (videoElement) {Error playing remote stream in answer:", error);
+        videoElement.srcObject = currentStream;
+        console.log(`Set remote stream to ${callType === 'audio' ? 'audio' : 'video'} element in answer`);
+        
+        // Ensure audio playback
+        videoElement.play().catch(error => {
+          console.error("Error playing remote stream in answer:", error);
+        });
+      }
+    });r.on("close", () => {
+      console.log("Peer connection closed in answer - but call will continue until manually ended");
+    peer.on("connect", () => {
+      console.log("Peer connection established successfully in answer");
+    });r.on("error", (error) => {
+      console.error("Peer connection error in answer:", error);
+    peer.on("close", () => {er error occurred but call continues - manual disconnect required");
+      console.log("Peer connection closed in answer - but call will continue until manually ended");
+    });
+    try {
+    peer.on("error", (error) => {estroyed && peer.connectionState !== 'connected') {
+      console.error("Peer connection error in answer:", error);, peer.connectionState);
+      console.log("Answer peer error occurred but call continues - manual disconnect required");
+    }); else {
+        console.log("Cannot signal - peer destroyed or already connected:", {
+    try { destroyed: peer.destroyed,
+      if (callerSignal && !peer.destroyed && peer.connectionState !== 'connected') {
+        console.log("Signaling with caller signal. Peer state:", peer.connectionState);
+        peer.signal(callerSignal);
+      } else {
+        console.log("Cannot signal - peer destroyed or already connected:", {
+          destroyed: peer.destroyed, in answerCall:", error);
+          connectionState: peer.connectionState,nnect
+          hasSignal: !!callerSignal error occurred but continuing call - manual disconnect required");
+        });
+      }
+    } catch (error) {rent = peer;
+      console.error("Error signaling in answerCall:", error);
+      // Log error but don't automatically disconnect
+      console.log("Answer signaling error occurred but continuing call - manual disconnect required");
+    }onsole.log("Leaving call, cleaning up connections");
+    setCallEnded(true);
+    connectionRef.current = peer;
+  }, [socket, caller, callerSignal]);
+    if (callTimerRef.current) {
+  const leaveCall = useCallback(() => {t);
+    console.log("Leaving call, cleaning up connections");
+    setCallEnded(true);
+    setCallTimer(0);
+    // Stop call timer directly
+    if (callTimerRef.current) {
+      clearInterval(callTimerRef.current);
+      callTimerRef.current = null;
+    }   connectionRef.current.destroy();
+    setCallTimer(0);) {
+        console.error("Error destroying peer connection:", error);
+    // Clean up peer connection
+    if (connectionRef.current) {ll;
+      try {
+        connectionRef.current.destroy();
+      } catch (error) {
+        console.error("Error destroying peer connection:", error);
+      }treamRef.current.getTracks().forEach(track => {
+      connectionRef.current = null;
+    }     track.stop();
+        } catch (error) {
+    // Clean up streams("Error stopping track:", error);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        try {ef.current = null;
+          track.stop();
+        } catch (error) {
+          console.error("Error stopping track:", error);
+        }llAccepted(false);
+      });ceivingCall(false);
+      streamRef.current = null;
+    }etCallerSignal(null);
+    setName("");
+    // Reset states
+    setCallAccepted(false);t
+    setReceivingCall(false);
+    setCaller("");nt.emit("endCall", { to: contact._id });
+    setCallerSignal(null);
+    setName("");
+    onClose();
+    // Emit call ended eventse]);
+    if (socket?.current) {
+      socket.current.emit("endCall", { to: contact._id });
+    }f (streamRef.current) {
+      const audioTrack = streamRef.current.getAudioTracks()[0];
+    onClose();oTrack) {
+  }, [socket, contact, onClose]);ioTrack.enabled;
+        setIsMuted(!audioTrack.enabled);
+  const toggleMute = () => {
+    if (streamRef.current) {
+      const audioTrack = streamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMuted(!audioTrack.enabled);
+      }onst videoTrack = streamRef.current.getVideoTracks()[0];
+    } if (videoTrack) {
+  };    videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoOff(!videoTrack.enabled);
+  const toggleVideo = () => {
+    if (streamRef.current) {
+      const videoTrack = streamRef.current.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoOff(!videoTrack.enabled);
+      }
+    }
+  };nst toggleSpeaker = async () => {
+    try {
+  const toggleFullscreen = () => {peakerOn;
+    setIsFullscreen(!isFullscreen);
+  };  // Control volume and audio output for the appropriate elements based on call type
+      const videoElements = callType === 'audio' ? 
+  const toggleSpeaker = async () => {urrent].filter(Boolean) :
+    try {userVideo.current, myVideo.current].filter(Boolean);
+      const newSpeakerState = !isSpeakerOn;
+      for (const videoElement of videoElements) {
+      // Control volume and audio output for the appropriate elements based on call type
+      const videoElements = callType === 'audio' ? 
+        [userAudio.current, myAudio.current].filter(Boolean) :
+        [userVideo.current, myVideo.current].filter(Boolean);
+          // Try to set audio output to speaker if supported
+      for (const videoElement of videoElements) {
+        // Control volume based on speaker state
+        if (newSpeakerState) {await navigator.mediaDevices.enumerateDevices();
+          // Speaker ON: Higher volumevices.find(device => 
+          videoElement.volume = 1.0;iooutput' && 
+          // Try to set audio output to speaker if supportedr') || 
+          if (videoElement.setSinkId) {se().includes('built-in'))
+              );
+              if (speakerDevice && speakerDevice.deviceId !== 'default') {
+                await videoElement.setSinkId(speakerDevice.deviceId);
+              }
+            } catch (sinkError) {
+              console.log('setSinkId not available, using volume control only');
+            }
+          }
+        } else {
+          // Speaker OFF: Lower volume (earpiece mode)
+          videoElement.volume = 0.7;
+          // Try to set to default audio output if supported
+          if (videoElement.setSinkId) {
+            try {
+              await videoElement.setSinkId('');
+            } catch (sinkError) {
+              console.log('setSinkId not available, using volume control only');
+            }
+          }
+        }
+      }
+      
+      setIsSpeakerOn(newSpeakerState);
+      
+      // Provide user feedback
+      console.log(`Speaker ${newSpeakerState ? 'ON' : 'OFF'} - Volume set to ${newSpeakerState ? '100%' : '70%'}`);
+      
+    } catch (error) {
+      console.warn('Speaker toggle error:', error);
+      // Fallback: just toggle the state for UI feedback
+      setIsSpeakerOn(!isSpeakerOn);
+    }
+  };
+
+  // Call timer functions
+  const startCallTimer = useCallback(() => {
+    setCallTimer(0);
+    callTimerRef.current = setInterval(() => {
+      setCallTimer(prev => prev + 1);
+    }, 1000);
+  }, []);
+
+  const stopCallTimer = useCallback(() => {
+    if (callTimerRef.current) {
+      clearInterval(callTimerRef.current);
+      callTimerRef.current = null;
+    }
+    setCallTimer(0);
+  }, []);
+
+  // Format timer display
+  const formatCallTime = useCallback((seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }, []);
+
+  // Reset connection state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log("VideoCall modal opened, resetting connection state");
+      
+      // Clean up any existing connection
+      if (connectionRef.current) {
+        try {
+          connectionRef.current.destroy();
+        } catch (error) {
+          console.error("Error destroying existing connection:", error);
+        }
+        connectionRef.current = null;
+      }
+
+      // Reset call states
+      setCallAccepted(false);
+      setCallEnded(false);
+      setReceivingCall(false);
+      setCaller("");
+      setCallerSignal(null);
+      setName("");
+    }
+  }, [isOpen]);
+
+  // Auto-call when opening for outgoing calls
+  useEffect(() => {
+    console.log("Auto-call effect:", {
+      isOpen,
+      isIncoming,
+      contact: contact?._id,
+      hasStream: !!streamRef.current,
+      callAccepted,
+      hasConnection: !!connectionRef.current
+    });
+    
+    if (isOpen && !isIncoming && contact && streamRef.current && !callAccepted && !connectionRef.current) {
+      console.log("Triggering auto-call to:", contact._id);
+      const timeoutId = setTimeout(() => {
+        callUser(contact._id);
+      }, 100); // Small delay to ensure state is settled
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isOpen, isIncoming, contact, stream, callAccepted, callUser]);
+
+  // Start timer when call is accepted
+  useEffect(() => {
+    if (callAccepted && !callEnded) {
+      console.log("Call accepted - starting timer");
+      startCallTimer();
+    }
+    
+    return () => {
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+      }
+    };
+  }, [callAccepted, callEnded, startCallTimer]);
+
+  if (!isOpen) return null;
+
+  return (
+    <VideoCallContainer isFullscreen={isFullscreen}>
+      <VideoCallHeader>
+        <CallInfo>
+          <ContactName>{contact?.username || name}</ContactName>
+          <CallStatus>
+            {!callAccepted && !receivingCall ? "Calling..." : 
+             receivingCall && !callAccepted ? "Incoming call..." : 
+             "Connected"}
+          </CallStatus>
+          {callAccepted && !callEnded && (
+            <CallTimer>{formatCallTime(callTimer)}</CallTimer>
+          )}
+        </CallInfo>
+        <HeaderControls>
+          <ControlButton onClick={toggleFullscreen}>
+            {isFullscreen ? <FiMinimize2 /> : <FiMaximize2 />}
+          </ControlButton>
+        </HeaderControls>
+      </VideoCallHeader>
+
+      <VideoContainer>
+        {/* Always render video elements for both audio and video calls */}
+        {/* Local video/audio element */}
+        <MyVideoContainer style={{ display: callType === 'audio' ? 'none' : 'block' }}>
+          <MyVideo
+            playsInline
+            muted
+            ref={myVideo}
+            autoPlay
+            style={{ display: isVideoOff || callType === 'audio' ? 'none' : 'block' }}
+          />
+          {(isVideoOff || callType === 'audio') && callType === 'video' && <VideoOffPlaceholder>Camera Off</VideoOffPlaceholder>}
+        </MyVideoContainer>
+
+        {/* Remote video/audio element - always render for audio to work */}
+        {callAccepted && !callEnded && (
+          <UserVideoContainer style={{ display: callType === 'audio' ? 'none' : 'block' }}>
+            <UserVideo
+              playsInline
+              ref={userVideo}
+              autoPlay
+              controls={false}
+            />
+          </UserVideoContainer>
+        )}
+
+        {/* Hidden audio element for audio-only calls */}
+        {callType === 'audio' && (
+          <>
+            <audio
+              ref={myAudio}
+              autoPlay
+              muted
+              playsInline
+              style={{ display: 'none' }}
+            />
+            {callAccepted && !callEnded && (
+              <audio
+                ref={userAudio}
+                autoPlay
+                playsInline
+                style={{ display: 'none' }}
+              />
+            )}
+          </>
+        )}
+
+        {callType === 'audio' && (
+          <AudioCallContainer>
+            <ContactAvatar>
+              {contact?.username?.charAt(0).toUpperCase() || name?.charAt(0).toUpperCase()}
+            </ContactAvatar>
+            <ContactName>{contact?.username || name}</ContactName>
+          </AudioCallContainer>
+        )}
+
+        {receivingCall && !callAccepted && (
+          <IncomingCallOverlay>
+            <IncomingCallInfo>
+              <ContactName>{name} is calling...</ContactName>
+              <CallType>{callType === 'video' ? 'Video Call' : 'Voice Call'}</CallType>
+            </IncomingCallInfo>
+            <IncomingCallButtons>
+              <AcceptButton onClick={answerCall}>
+                <FiPhone />
+              </AcceptButton>
+              <DeclineButton onClick={onClose}>
+                <FiPhoneOff />
+              </DeclineButton>
+            </IncomingCallButtons>
+          </IncomingCallOverlay>
+        )}
+      </VideoContainer>
+
+      <CallControls>
+        <ControlButton onClick={toggleMute} isActive={isMuted}>
+          {isMuted ? <FiMicOff /> : <FiMic />}
+        </ControlButton>
+        
+        {callType === 'video' && (
+          <ControlButton onClick={toggleVideo} isActive={isVideoOff}>
+            {isVideoOff ? <FiVideoOff /> : <FiVideo />}
+          </ControlButton>
+        )}
+        
+        <ControlButton onClick={toggleSpeaker} isActive={isSpeakerOn} title={isSpeakerOn ? "Turn off speaker" : "Turn on speaker"}>
+          {isSpeakerOn ? <FiVolume2 /> : <FiVolumeX />}
+        </ControlButton>
+        
+        <EndCallButton onClick={leaveCall}>
+          <FiPhoneOff />
+        </EndCallButton>
+      </CallControls>
+    </VideoCallContainer>
+  );
+};
+
+// Styled Components
+const VideoCallContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  
+  ${props => !props.isFullscreen && `
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    height: 80vh;
+    max-width: 1200px;
+    max-height: 800px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  `}
+`;
+
+const VideoCallHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+`;
+
+const CallInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const ContactName = styled.h3`
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+`;
+
+const CallStatus = styled.p`
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+`;
+
+const CallTimer = styled.p`
+  margin: 5px 0 0 0;
+  font-size: 1rem;
+  color: #00d084;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+`;
+
+const CallType = styled.p`
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+`;
+
+const HeaderControls = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const VideoContainer = styled.div`
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+`;
+
+const MyVideoContainer = styled.div`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 200px;
+  height: 150px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #333;
+  z-index: 2;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+`;
+
+const MyVideo = styled.video`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const UserVideoContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #333;
+`;
+
+const UserVideo = styled.video`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const VideoOffPlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #333;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+`;
+
+const AudioCallContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+`;
+
+const ContactAvatar = styled.div`
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+`;
+
+const IncomingCallOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+`;
+
+const IncomingCallInfo = styled.div`
+  text-align: center;
+  margin-bottom: 40px;
+`;
+
+const IncomingCallButtons = styled.div`
+  display: flex;
+  gap: 40px;
+`;
+
+const CallControls = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+`;
+
+const ControlButton = styled.button`
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: ${props => props.isActive ? '#ff4757' : 'rgba(255, 255, 255, 0.2)'};
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+
+  &:hover {
+    background: ${props => props.isActive ? '#ff3838' : 'rgba(255, 255, 255, 0.3)'};
+    transform: scale(1.1);
+  }
+`;
+
+const AcceptButton = styled(ControlButton)`
+  width: 60px;
+  height: 60px;
+  background: #00d084;
+  font-size: 1.5rem;
+
+  &:hover {
+    background: #00b771;
+  }
+`;
+
+const DeclineButton = styled(ControlButton)`
+  width: 60px;
+  height: 60px;
+  background: #ff4757;
+  font-size: 1.5rem;
+
+  &:hover {
+    background: #ff3838;
+  }
+`;
+
+const EndCallButton = styled(ControlButton)`
+  background: #ff4757;
+  
+  &:hover {
+    background: #ff3838;
+  }
+`;
+
+export default VideoCallModal;

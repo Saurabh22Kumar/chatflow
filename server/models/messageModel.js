@@ -6,13 +6,17 @@ const MessageSchema = mongoose.Schema(
       text: { type: String, required: true },
       type: { 
         type: String, 
-        enum: ["text", "image", "file", "audio", "video", "emoji"], 
+        enum: ["text", "image", "file", "audio", "video", "voice", "emoji", "call", "call-system"], 
         default: "text" 
       },
       // For file/media messages
       fileUrl: { type: String },
       fileName: { type: String },
       fileSize: { type: Number },
+      // For call messages
+      callType: { type: String, enum: ["video", "audio"] },
+      callDuration: { type: Number }, // in seconds
+      callStatus: { type: String, enum: ["ended", "missed", "rejected", "cancelled"] },
     },
     users: Array,
     sender: {
@@ -68,6 +72,15 @@ const MessageSchema = mongoose.Schema(
       default: false,
     },
     deletedAt: Date,
+    // WhatsApp-style deletion
+    deletedFor: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }],
+    deletedForEveryone: {
+      type: Boolean,
+      default: false
+    },
   },
   {
     timestamps: true,

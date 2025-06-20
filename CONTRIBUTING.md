@@ -1,6 +1,6 @@
-# Contributing to Chatify
+# Contributing to ChatFlow
 
-We love your input! We want to make contributing to Chatify as easy and transparent as possible, whether it's:
+We love your input! We want to make contributing to ChatFlow as easy and transparent as possible, whether it's:
 
 - Reporting a bug
 - Discussing the current state of the code

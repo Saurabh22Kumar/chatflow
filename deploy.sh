@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Deployment script for Chatify
+# Deployment script for ChatFlow
 
-echo "🚀 Starting Chatify deployment..."
+echo "🚀 Starting ChatFlow deployment..."
 
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then

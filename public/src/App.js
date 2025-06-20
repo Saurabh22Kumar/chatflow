@@ -6,12 +6,18 @@ import Settings from "./components/Settings";
 import Chat from "./pages/Chat";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import "./styles/global.css"; // New global styles
+import "./styles/design-system.css"; // World-class design system
+import "./styles/global-mobile.css"; // Modern mobile-first styles
 
 export default function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <BrowserRouter 
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <div className="app">
           <Routes>
             <Route path="/register" element={<Register />} />

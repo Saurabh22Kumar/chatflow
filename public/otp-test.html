@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Input Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #00000076;
+            border-radius: 2rem;
+            padding: 3rem 5rem;
+            width: 90%;
+            max-width: 500px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .title {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .otp-container {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .otp-input {
+            width: 3.5rem;
+            height: 3.5rem;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border: 2px solid #4e0eff;
+            border-radius: 0.4rem;
+            background-color: transparent;
+            color: white;
+            transition: all 0.3s ease;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .otp-input:focus {
+            border-color: #997af0;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(78, 14, 255, 0.1);
+        }
+
+        .otp-input::-webkit-input-placeholder {
+            color: #666;
+            opacity: 0.7;
+        }
+
+        .otp-input::-moz-placeholder {
+            color: #666;
+            opacity: 0.7;
+        }
+
+        .test-section {
+            margin: 2rem 0;
+            color: white;
+        }
+
+        /* Tablet styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1.5rem;
+                width: 95%;
+                max-width: 400px;
+            }
+
+            .otp-container {
+                gap: 0.4rem;
+                margin: 1.5rem 0;
+            }
+            
+            .otp-input {
+                width: 3rem;
+                height: 3rem;
+                font-size: 1.2rem;
+                border-width: 2px;
+                min-width: 3rem;
+                flex-shrink: 0;
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem 1rem;
+                width: 98%;
+            }
+
+            .otp-container {
+                gap: 0.3rem;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+            
+            .otp-input {
+                width: 2.8rem;
+                height: 2.8rem;
+                font-size: 1.1rem;
+                min-width: 2.8rem;
+                flex-shrink: 0;
+            }
+
+            .title {
+                font-size: 1.3rem;
+            }
+        }
+
+        .demo-values {
+            margin-top: 1rem;
+            color: #b3b3b3;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="title">OTP Input Test</h2>
+        
+        <div class="test-section">
+            <p style="color: #b3b3b3;">Enter 6-digit verification code:</p>
+            
+            <div class="otp-container">
+                <input type="text" maxlength="1" class="otp-input" value="1">
+                <input type="text" maxlength="1" class="otp-input" value="2">
+                <input type="text" maxlength="1" class="otp-input" value="3">
+                <input type="text" maxlength="1" class="otp-input" value="4">
+                <input type="text" maxlength="1" class="otp-input" value="5">
+                <input type="text" maxlength="1" class="otp-input" value="6">
+            </div>
+            
+            <div class="demo-values">
+                <p>Desktop: 3.5rem × 3.5rem (1.4rem font)</p>
+                <p>Tablet: 3rem × 3rem (1.2rem font)</p>
+                <p>Mobile: 2.8rem × 2.8rem (1.1rem font)</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <p style="color: #b3b3b3; font-size: 0.9rem;">
+                ✅ Numbers fully visible in all boxes<br>
+                ✅ All 6 boxes stay on same line<br>
+                ✅ Responsive design for all screen sizes
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Add basic OTP functionality for testing
+        const inputs = document.querySelectorAll('.otp-input');
+        
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
