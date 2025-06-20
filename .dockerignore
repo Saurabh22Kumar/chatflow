@@ -1,24 +1,16 @@
-# Dependencies
+# Node modules and logs
 node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Frontend source (we only need the build)
-public/src
-public/public
+# Frontend build artifacts and node_modules
 public/node_modules
-public/package.json
-public/package-lock.json
-public/yarn.lock
-public/.env*
-public/README.md
+public/build
 
-# Git
+# Git and IDE
 .git
 .github
-
-# IDE
 .vscode
 .idea
 
@@ -28,21 +20,11 @@ logs
 
 # Environment files
 .env
-.env.local
-.env.*.local
+.env.*
 
-# OS
-.DS_Store
-Thumbs.db
+# Docker and config
+Dockerfile
+.dockerignore
 
-# Documentation
-*.md
-!README.md
-
-# Deployment files
-.vercel
-.netlify
-
-# Test files
-test-*
-*.test.js
+dist
+coverage

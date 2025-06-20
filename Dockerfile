@@ -1,24 +1,25 @@
 # ChatFlow - Railway Deployment
-FROM node:18-alpine
 
-# Set working directory
-WORKDIR /app
-
-# Copy root package.json and install dependencies
-COPY package*.json ./
+# ---- Build Frontend ----
+FROM node:18-alpine AS frontend
+WORKDIR /app/frontend
+COPY public/package*.json ./
 RUN npm install
+COPY public/ ./
+RUN npm run build
 
-# Copy frontend source and build it
-COPY public/ ./public/
-WORKDIR /app/public
-RUN npm ci && npm run build
-
-# Copy server source
+# ---- Build Backend ----
+FROM node:18-alpine AS backend
 WORKDIR /app
+COPY package*.json ./
+RUN npm install --only=production
 COPY server/ ./server/
 
-# Expose port
+# Copy built frontend to backend static folder
+COPY --from=frontend /app/frontend/build ./server/public/build
+
+# Expose port (Railway will set $PORT)
 EXPOSE $PORT
 
-# Start the application
-CMD ["npm", "start"]
+# Start the backend server
+CMD ["node", "server/server.js"]
