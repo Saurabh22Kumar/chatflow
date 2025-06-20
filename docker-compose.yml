@@ -1,10 +1,33 @@
-version: '3.8'
 services:
-  front:
+  frontend:
     build: ./public
     ports:
-      - 3000:3000
-  api:
+      - "3000:3000"
+    environment:
+      - REACT_APP_LOCALHOST_KEY=chat-app-current-user
+      - REACT_APP_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+
+  backend:
     build: ./server
     ports:
-      - 5000:5000
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - MONGO_URL=mongodb://mongo:27017/chatflow
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=chatflow
+
+volumes:
+  mongo_data:

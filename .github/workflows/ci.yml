@@ -93,7 +93,7 @@ jobs:
     - name: Test Docker Containers
       run: |
         docker compose up -d
-        sleep 30
+        sleep 45
         # Check if containers are running
         docker compose ps
         # Test backend health
