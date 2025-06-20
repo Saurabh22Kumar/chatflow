@@ -4,9 +4,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Frontend build artifacts and node_modules
+# Frontend node_modules only (do not ignore build)
 public/node_modules
-public/build
 
 # Git and IDE
 .git
