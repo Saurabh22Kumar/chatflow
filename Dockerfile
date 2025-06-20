@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copy root package.json and install dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install
 
 # Copy frontend source and build it
 COPY public/ ./public/
