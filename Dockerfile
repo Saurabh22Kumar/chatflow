@@ -15,8 +15,8 @@ COPY package*.json ./
 RUN npm install --only=production
 COPY server/ ./server/
 
-# Copy built frontend to backend static folder
-COPY --from=frontend /app/frontend/build ./server/public/build
+# Copy built frontend to correct static folder for backend
+COPY --from=frontend /app/frontend/build ./public/build
 
 # Expose port (Railway will set $PORT)
 EXPOSE $PORT
