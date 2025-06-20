@@ -8,8 +8,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy pre-built frontend and server source
-COPY public/build/ ./public/build/
+# Copy frontend source and build it
+COPY public/ ./public/
+WORKDIR /app/public
+RUN npm ci && npm run build
+
+# Copy server source
+WORKDIR /app
 COPY server/ ./server/
 
 # Expose port
