@@ -7,8 +7,7 @@
 
 A cutting-edge, full-stack messaging platform built with the MERN stack, featuring advanced real-time communication, smart user interactions, and innovative chat experiences.
 
-![Login Interface](./images/snappy_login.png)
-![Chat Dashboard](./images/snappy.png)
+**🚀 Live Demo:** [https://chatflow-production-2fcc.up.railway.app/](https://chatflow-production-2fcc.up.railway.app/)
 
 ## 🌟 What Makes ChatFlow Special
 
@@ -192,21 +191,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ⭐ Star this repository if you found it helpful!
-```shell
-cd server
-yarn start
-```
-Done! Now open localhost:3000 in your browser.
-
-#### Second Method
-- This method requires docker and docker-compose to be installed in your system.
-- Make sure you are in the root of your project and run the following command.
-
-```shell
-docker compose build --no-cache
-```
-after the build is complete run the containers using the following command
-```shell
-docker compose up
-```
-now open localhost:3000 in your browser.
