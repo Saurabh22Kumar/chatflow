@@ -104,7 +104,7 @@ export default function Login() {
               <FiUser className="input-icon" />
               <input
                 type="text"
-                placeholder="Username or Email"
+                placeholder="Enter User Name"
                 name="username"
                 value={values.username}
                 onChange={(e) => handleChange(e)}
