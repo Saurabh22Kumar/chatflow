@@ -50,5 +50,5 @@ jobs:
       
     - name: Test Docker compose build
       run: |
-        docker-compose build
+        docker compose build
         echo "Docker build successful!"
