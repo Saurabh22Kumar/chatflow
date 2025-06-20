@@ -11,4 +11,4 @@ cmds = ["cd server && npm ci --only=production"]
 cmds = ["echo 'Frontend already built, skipping build phase'"]
 
 [start]
-cmd = "cd server && npm start"
+cmd = "npm start"
