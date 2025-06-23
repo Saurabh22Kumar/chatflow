@@ -78,9 +78,12 @@ app.get("/api/users/online", (req, res) => {
   return res.json({ onlineUsers: onlineUserIds });
 });
 
-const server = app.listen(process.env.PORT || 5001, () =>
-  console.log(`Server started on ${process.env.PORT}`)
+// Use Railway/Heroku/Cloud port if provided, fallback to 5001
+const PORT = process.env.PORT || 5001;
+const server = app.listen(PORT, () =>
+  console.log(`Server started on ${PORT}`)
 );
+
 const io = socket(server, {
   cors: {
     origin: [
