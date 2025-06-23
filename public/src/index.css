@@ -178,3 +178,6 @@ body.theme-dark .chatlist-header {
 body.theme-dark .main-header {
   background: #18181b;
 }
+.chat-list-content {
+  padding-top: 104px; /* 56px (main) + 48px (chatlist header) */
+}
