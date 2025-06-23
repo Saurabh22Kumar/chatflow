@@ -162,3 +162,16 @@ body.theme-dark .chat-header {
 body.theme-dark .chatlist-header {
   background: #18181b;
 }
+
+/* Example for main header if not already sticky */
+.main-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+  height: 56px; /* or your actual height */
+}
+
+body.theme-dark .main-header {
+  background: #18181b;
+}
