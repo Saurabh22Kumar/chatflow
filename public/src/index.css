@@ -84,3 +84,68 @@ body.theme-dark ::-webkit-scrollbar-thumb {
 body.theme-dark ::-webkit-scrollbar-thumb:hover {
   background: #00ff88;
 }
+
+/* Message row should be full width and flex for alignment */
+.message {
+  width: 100%;
+  display: flex;
+}
+
+.message.sended {
+  justify-content: flex-end;
+  background: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+.message.recieved {
+  justify-content: flex-start;
+  background: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+/* Bubble styling for message content - improved for robust alignment */
+.message .content {
+  max-width: 70%;
+  padding: 8px 14px;
+  word-break: break-word;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  margin: 2px 8px;
+}
+
+.message.sended .content {
+  background: #daf8cb;
+  border-radius: 16px 16px 4px 16px;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.message.recieved .content {
+  background: #fff;
+  border-radius: 16px 16px 16px 4px;
+  margin-right: auto;
+  margin-left: 0;
+}
+
+/* Ensure chat messages are flex column for alignment */
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  padding: 12px 0;
+}
+
+/* Make chat header sticky and always visible at the top */
+.chat-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+body.theme-dark .chat-header {
+  background: #18181b;
+}
