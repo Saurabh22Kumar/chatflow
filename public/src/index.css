@@ -137,10 +137,10 @@ body.theme-dark ::-webkit-scrollbar-thumb:hover {
   padding: 12px 0;
 }
 
-/* Make chat header sticky and always visible at the top */
+/* Make chat header sticky below the main app header (e.g., ChatFlow) */
 .chat-header {
   position: sticky;
-  top: 0;
+  top: 56px; /* Adjust this value to match your main header height */
   z-index: 100;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
