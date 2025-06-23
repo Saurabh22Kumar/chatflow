@@ -149,3 +149,16 @@ body.theme-dark ::-webkit-scrollbar-thumb:hover {
 body.theme-dark .chat-header {
   background: #18181b;
 }
+
+/* Make chat list header sticky below the main app header (e.g., ChatFlow) */
+.chatlist-header {
+  position: sticky;
+  top: 56px; /* Adjust this value to match your main header height */
+  z-index: 99;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+body.theme-dark .chatlist-header {
+  background: #18181b;
+}
