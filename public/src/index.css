@@ -153,13 +153,10 @@ body.theme-dark .chat-header {
 /* Make chat list header sticky below the main app header (e.g., ChatFlow) */
 .chatlist-header {
   position: sticky;
-  top: 56px; /* must match .main-header height */
-  z-index: 999;
+  top: 56px; /* Adjust this value to match your main header height */
+  z-index: 100;
   background: #fff;
-  min-height: 48px; /* or your actual chatlist header height */
-  display: flex;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 body.theme-dark .chatlist-header {
